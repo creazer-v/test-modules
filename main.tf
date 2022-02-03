@@ -33,9 +33,3 @@ module "networking" {
 
 }
 
-module "vpc_without-igw" {
-  source = "./terraform-aws-modules/ec2"
-  ankit  = "ami-05c029a4b57edda9e"
-}
-
-
