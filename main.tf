@@ -20,73 +20,84 @@ provider "aws" {
   }
 }
 
-module "aws_cognito_user_pool_complete" {
-
-  source  = "lgallard/cognito-user-pool/aws"
-  version = "0.14.2"
-
-  user_pool_name   = "aw-fiber-cms-prod-app04"
-  alias_attributes = ["email"]
-  #auto_verified_attributes = ["email"]
-
-  # email_configuration = {
-  #   email_sending_account = "DEVELOPER"
-  #   source_arn            = "arn:aws:ses:us-east-1:123456789238:identity/example.com"
-  # }
-
-  admin_create_user_config = {
-    allow_admin_create_user_only = false
-  }
-
-  #enable_username_case_insensitivity  = true
-
-  password_policy = {
-    minimum_length                   = 8
-    require_lowercase                = true
-    require_numbers                  = true
-    require_symbols                  = true
-    require_uppercase                = true
-    temporary_password_validity_days = 7
-  }
-
-  # string_schemas = [
-  #   {
-  #     attribute_data_type      = "String"
-  #     developer_only_attribute = false
-  #     mutable                  = false
-  #     name                     = "email"
-  #     required                 = true
-
-  #     string_attribute_constraints = {
-  #       min_length = 7
-  #       max_length = 15
-  #     }
-  #   }
-  # ]
-
-  recovery_mechanisms = [
+resource "aws_cognito_user_pool" "pool" {
+  name = "test-userpool2335"
+  account_recovery_setting = [
     {
-      name     = "verified_email"
-      priority = 1
-    },
-    {
-      name     = "verified_phone_number"
-      priority = 2
+      recovery_mechanism = [
+        {
+          name     = "verified_email",
+          priority = 1
+        },
+        {
+          name     = "verified_phone_number",
+          priority = 2
+        }
+      ]
     }
   ]
-
-  tags = {
-    Owner       = "user"
-    Environment = "Production"
-    Terraform   = true
-  }
-
-  clients = [
+  admin_create_user_config = [
     {
-      name            = "aw-cms-production"
-      read_attributes = ["email", "email_verified", "preferred_username"]
-      generate_secret = false
+      allow_admin_create_user_only = false
     }
   ]
+  alias_attributes = [
+    "email"
+  ]
+  auto_verified_attributes = [
+    "email"
+  ]
+  email_configuration = [
+    {
+      email_sending_account = "COGNITO_DEFAULT",
+    }
+  ]
+  password_policy = [
+    {
+      minimum_length                   = 8,
+      require_lowercase                = true,
+      require_numbers                  = true,
+      require_symbols                  = true,
+      require_uppercase                = true,
+      temporary_password_validity_days = 7
+    }
+  ]
+  schema = [
+    {
+      attribute_data_type          = "String",
+      developer_only_attribute     = false,
+      mutable                      = true,
+      name                         = "email",
+      number_attribute_constraints = [],
+      required                     = true,
+      string_attribute_constraints = [
+        {
+          max_length = "2048",
+          min_length = "0"
+        }
+      ]
+    }
+  ]
+  mfa_configuration = "OFF"
+  username_configuration = [
+    {
+      case_sensitive = false
+    }
+  ]
+}
+
+resource "aws_cognito_user_pool_client" "client" {
+  name                                 = "test-userpool2335cli"
+  user_pool_id                         = aws_cognito_user_pool.pool.id
+  access_token_validity                = 0
+  allowed_oauth_flows_user_pool_client = false
+  enable_token_revocation              = true
+  read_attributes = [
+    "email",
+    "email_verified",
+    "preferred_username"
+  ]
+  refresh_token_validity = 30
+
 }
 
