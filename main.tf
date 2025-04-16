@@ -1,4 +1,4 @@
-##https://prod.liveshare.vsengsaas.visualstudio.com/join?76B0F2772B421B2CF84F445BD12C2658B9A5
+##ht=
 terraform {
 
   required_version = ">= 1.0"
